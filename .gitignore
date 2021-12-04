@@ -1,0 +1,5 @@
+wandb/
+weights/
+masks/
+sartorius-cell-instance-segmentation/
+.idea/
