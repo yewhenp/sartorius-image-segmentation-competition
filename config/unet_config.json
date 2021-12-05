@@ -6,7 +6,7 @@
   "train_ratio": 0.8,
   "batch_size": 1,
   "shuffle": true,
-  "epochs": 10,
+  "epochs": 15,
   "weights_dir": "weights",
   "save_weights_each": 5,
   "generator_type": "dynamic"

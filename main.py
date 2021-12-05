@@ -6,6 +6,7 @@ from argparse import ArgumentParser, Namespace
 from src.constants import ConfigKeys as ck, WIDTH, REDUCED_HEIGHT
 from src.data_generator import DataLoader
 from src.models import get_model
+from src.loss import tversky_loss
 from src.wandb_communications import WandbCustomCallback
 
 
@@ -27,7 +28,7 @@ def main(args: Namespace):
     print("Compiling model...")
     model = get_model(name=cnf[ck.MODEL_NAME], input_shape=(REDUCED_HEIGHT, WIDTH, 3))
     model.compile(optimizer="adam",
-                  loss=keras.losses.CategoricalCrossentropy(),
+                  loss=tversky_loss(0.5),
                   metrics=[keras.metrics.MeanIoU(num_classes=2)])
 
     print("Training model")
