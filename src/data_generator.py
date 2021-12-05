@@ -121,6 +121,7 @@ class StaticDataGenerator(keras.utils.Sequence):
         for i, photo_id in enumerate(photo_ids):
             # load image
             image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
+            image = cv2.resize(image, (image.shape[1], REDUCED_HEIGHT))
             image = rescaling(image)       # normalize
             assert 0 <= image.numpy().min() < image.numpy().max() <= 1
             self.images[i] = image
@@ -172,14 +173,14 @@ class DataLoader:
     Loads data
     """
 
-    def __init__(self, cnf: Dict, type: str="dynamic"):
+    def __init__(self, cnf: Dict, type_: str= "dynamic"):
         """
         Initialisation
         :param cnf: config
         """
         self.cnf = cnf
         self.train_df = None
-        self.generator = DynamicDataGenerator if type == "dynamic" else StaticDataGenerator
+        self.generator = DynamicDataGenerator if type_ == "dynamic" else StaticDataGenerator
 
     def load_data(self):
         """

@@ -1,6 +1,6 @@
 WIDTH = 704
 HEIGHT = 520
-REDUCED_HEIGHT = 520
+REDUCED_HEIGHT = 512
 
 class ConfigKeys:
     MODEL_NAME = "model_name"
@@ -14,3 +14,4 @@ class ConfigKeys:
     WEIGHTS_DIR = "weights_dir"
     SAVE_WEIGHTS_EACH = "save_weights_each"
     GENERATOR_TYPE = "generator_type"
+    EXPERIMENT_NAME = "experiment_name"

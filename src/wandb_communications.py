@@ -4,17 +4,20 @@ from typing import Dict
 import numpy as np
 import wandb
 from tensorflow.keras.callbacks import Callback
+from .constants import ConfigKeys as ck
 
 
 class WandbCustomCallback(Callback):
-    def __init__(self, config: Dict, weights_dir: str, save_each: int):
+    def __init__(self, config: Dict, all_weights_dir: str, save_each: int):
         super().__init__()
         self.config = config
-        self.weights_dir = weights_dir
+        self.weights_dir = os.path.join(all_weights_dir, config[ck.EXPERIMENT_NAME])
         self.save_each = save_each
         self.best_train_loss = np.inf
         self.best_val_loss = np.inf
 
+        if not os.path.exists(all_weights_dir):
+            os.mkdir(all_weights_dir)
         if not os.path.exists(self.weights_dir):
             os.mkdir(self.weights_dir)
 

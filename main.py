@@ -12,7 +12,7 @@ from src.wandb_communications import WandbCustomCallback
 def main(args: Namespace):
     with open(args.config) as file:
         cnf = json.load(file)
-    wandb.init(project="sartorius", config=cnf)
+    wandb.init(project="sartorius", entity="happy_geese", config=cnf)
     wdb = WandbCustomCallback(cnf, cnf[ck.WEIGHTS_DIR], cnf[ck.SAVE_WEIGHTS_EACH])
 
     print("Preparing data generators...")
