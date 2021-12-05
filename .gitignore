@@ -3,3 +3,5 @@ weights/
 masks/
 sartorius-cell-instance-segmentation/
 .idea/
+sartorius-cell-instance-segmentation.zip
+*__pycache__

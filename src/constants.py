@@ -1,3 +1,7 @@
+WIDTH = 704
+HEIGHT = 520
+REDUCED_HEIGHT = 512
+
 class ConfigKeys:
     IMAGES_DIR_PATH = "images_read_dir"
     TRAIN_CSV_PATH = "train_csv_path"

@@ -5,9 +5,11 @@ import cv2
 import numpy as np
 import pandas as pd
 from tensorflow import keras
-from tensorflow.keras import layers
-
-from .config_keys import ConfigKeys
+# from tensorflow.keras import layers
+# for some reasaon there is no Rescaling in above in my tensorflow version # TODO: fix tensorflow
+from tensorflow.python.keras import layers
+from .utilities import load_train_labels
+from .constants import WIDTH, HEIGHT, REDUCED_HEIGHT, ConfigKeys as ck
 
 
 class NeuronDataGenerator(keras.utils.Sequence):
@@ -16,21 +18,21 @@ class NeuronDataGenerator(keras.utils.Sequence):
     Sequence based data generator.
     """
 
-    def __init__(self, cnf: Dict, df: pd.core.groupby.GroupBy):
+    def __init__(self, cnf: Dict, grouped_labels: pd.core.groupby.GroupBy):
         """
         Initialization
         :param cnf: config
-        :param df: grouped dataframe by id
+        :param grouped_labels: grouped dataframe by id
         """
         self.cnf = cnf
-        self.df = df
-        self.photo_keys = list(df.groups.keys())
-        self.batch_size = cnf[ConfigKeys.BATCH_SIZE]
-        self.shuffle = cnf[ConfigKeys.SHUFFLE]
-        self.image_dim = (512, df.get_group(self.photo_keys[0])["width"].max())
+        self.df = grouped_labels
+        self.photo_keys = list(grouped_labels.groups.keys())
+        self.batch_size = cnf[ck.BATCH_SIZE]
+        self.shuffle = cnf[ck.SHUFFLE]
+        self.image_dim = (REDUCED_HEIGHT, WIDTH)     # TODO: try not reshape
         self.channels = 3
         self.indexes = []
-        self.rescaling = layers.Rescaling(1. / 255)
+        self.rescaling = layers.Rescaling(1. / 255) # TODO: -mean / std
         self.on_epoch_end()
 
     def __len__(self):
@@ -68,9 +70,9 @@ class NeuronDataGenerator(keras.utils.Sequence):
         """
         x = np.empty((self.batch_size, *self.image_dim, self.channels), dtype="float")
         for i, photo_id in enumerate(photo_ids):
-            image = cv2.imread(f"{self.cnf[ConfigKeys.IMAGES_DIR_PATH]}/{photo_id}.png")
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            image = cv2.resize(image, (image.shape[1], 512))
+            image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
+            # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = cv2.resize(image, (image.shape[1], REDUCED_HEIGHT))
             image = self.rescaling(image)
             assert 0 <= image.numpy().min() < image.numpy().max() <= 1
             x[i, ] = image
@@ -84,12 +86,12 @@ class NeuronDataGenerator(keras.utils.Sequence):
         """
         y = np.empty((self.batch_size, *self.image_dim), dtype="int")
         for i, photo_id in enumerate(photo_ids):
-            with open(f"{self.cnf[ConfigKeys.MASK_DIR_PATH]}/mask_{photo_id}.pkl", 'rb') as f:
+            with open(f"{self.cnf[ck.MASK_DIR_PATH]}/mask_{photo_id}.pkl", 'rb') as f:
                 image = pickle.load(f)
-                image = cv2.resize(image, (image.shape[1], 512))
+                image = cv2.resize(image, (image.shape[1], REDUCED_HEIGHT))
                 image = np.round(image / 255)
                 assert image.min() == 0 and image.max() == 1
-                y[i, ] = image
+                y[i] = image
         return y
 
 
@@ -104,23 +106,27 @@ class DataLoader:
         :param cnf: config
         """
         self.cnf = cnf
-        self.train_df = pd.DataFrame()
+        self.train_df = None
 
     def load_data(self):
         """
         Loads data from file
         :return: None
         """
-        self.train_df = pd.read_csv(self.cnf[ConfigKeys.TRAIN_CSV_PATH])
+        # self.train_df = pd.read_csv(self.cnf[ConfigKeys.TRAIN_CSV_PATH])
+        self.train_df = load_train_labels(self.cnf[ck.TRAIN_CSV_PATH])
 
     def split_data(self):
         """
         Splits data to train and test and creates data generators
         :return: Union[NeuronDataGenerator, NeuronDataGenerator]
         """
-        df = self.train_df.groupby("id")
-        df_groups = [df.get_group(x) for x in df.groups]
-        split_index = int(len(df_groups) * self.cnf[ConfigKeys.TRAIN_RATIO])
+
+        # TODO drop unused
+        df_groups = [self.train_df.get_group(x) for x in self.train_df.groups]
+        split_index = int(len(df_groups) * self.cnf[ck.TRAIN_RATIO])
+
+        # TODO: shuffle
         df_train = pd.concat(df_groups[:split_index]).groupby("id")
         df_validate = pd.concat(df_groups[split_index:]).groupby("id")
 

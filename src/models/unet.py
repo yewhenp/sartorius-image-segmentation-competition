@@ -27,7 +27,7 @@ def decoder_block(input_data, skip_features, num_filters):
     return x
 
 
-def get_model(input_data_shape) -> keras.Model:
+def get_unet(input_data_shape) -> keras.Model:
     inputs = keras.Input(input_data_shape)
 
     # TODO: regularization

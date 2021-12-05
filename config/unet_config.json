@@ -1,4 +1,5 @@
 {
+  "model_name": "U-NET",
   "images_read_dir": "sartorius-cell-instance-segmentation/train",
   "train_csv_path": "sartorius-cell-instance-segmentation/train.csv",
   "mask_dir_path": "masks",
