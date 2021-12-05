@@ -8,5 +8,6 @@
   "shuffle": true,
   "epochs": 10,
   "weights_dir": "weights",
-  "save_weights_each": 5
+  "save_weights_each": 5,
+  "generator_type": "dynamic"
 }

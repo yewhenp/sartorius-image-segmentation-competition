@@ -1,8 +1,9 @@
 WIDTH = 704
 HEIGHT = 520
-REDUCED_HEIGHT = 512
+REDUCED_HEIGHT = 520
 
 class ConfigKeys:
+    MODEL_NAME = "model_name"
     IMAGES_DIR_PATH = "images_read_dir"
     TRAIN_CSV_PATH = "train_csv_path"
     MASK_DIR_PATH = "mask_dir_path"
@@ -12,3 +13,4 @@ class ConfigKeys:
     EPOCHS = "epochs"
     WEIGHTS_DIR = "weights_dir"
     SAVE_WEIGHTS_EACH = "save_weights_each"
+    GENERATOR_TYPE = "generator_type"

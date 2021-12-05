@@ -1,3 +1,4 @@
+import os
 from typing import Dict
 
 import numpy as np
@@ -13,6 +14,9 @@ class WandbCustomCallback(Callback):
         self.save_each = save_each
         self.best_train_loss = np.inf
         self.best_val_loss = np.inf
+
+        if not os.path.exists(self.weights_dir):
+            os.mkdir(self.weights_dir)
 
     def on_epoch_end(self, epoch, logs=None):
         if logs is not None:
