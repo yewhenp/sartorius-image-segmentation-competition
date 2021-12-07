@@ -6,8 +6,13 @@
   "train_ratio": 0.8,
   "batch_size": 1,
   "shuffle": true,
-  "epochs": 15,
+  "epochs": 1,
   "weights_dir": "weights",
   "save_weights_each": 5,
-  "generator_type": "dynamic"
+  "generator_type": "dynamic",
+  "submission_read_dir": "sartorius-cell-instance-segmentation/test",
+  "submission_csv_dir": "sartorius-cell-instance-segmentation/sample_submission.csv",
+  "use_pretrained": true,
+  "display": true,
+  "predict_submission": false
 }

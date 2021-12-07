@@ -97,7 +97,7 @@ class DynamicDataGenerator(keras.utils.Sequence):
 
 
 class StaticDataGenerator(keras.utils.Sequence):
-    def __init__(self, cnf: Dict, grouped_labels: pd.core.groupby.GroupBy):
+    def __init__(self, cnf: Dict, grouped_labels: pd.core.groupby.GroupBy, train_mode=True):
         """
         Initialization
         :param cnf: config
@@ -106,12 +106,13 @@ class StaticDataGenerator(keras.utils.Sequence):
         self.cnf = cnf
         self.batch_size = cnf[ck.BATCH_SIZE]
         self.shuffle = cnf[ck.SHUFFLE]
+        self.train_mode = train_mode
 
         self.image_dim = (REDUCED_HEIGHT, WIDTH)     # TODO: try not reshape
         self.channels = 3
         self.indexes = []
 
-        self.n_images =  len(grouped_labels)
+        self.n_images = len(grouped_labels)
         photo_ids = list(grouped_labels.groups.keys())
         rescaling = layers.Rescaling(1. / 255) # TODO: -mean / std
 
@@ -121,19 +122,19 @@ class StaticDataGenerator(keras.utils.Sequence):
         for i, photo_id in enumerate(photo_ids):
             # load image
             image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
-            image = rescaling(image)       # normalize
+            image = rescaling(cv2.resize(image, (image.shape[1], REDUCED_HEIGHT)))       # normalize
             assert 0 <= image.numpy().min() < image.numpy().max() <= 1
             self.images[i] = image
 
-            # load mask
-            with open(f"{self.cnf[ck.MASK_DIR_PATH]}/mask_{photo_id}.pkl", 'rb') as f:
-                mask = pickle.load(f)
-                mask = cv2.resize(mask, (mask.shape[1], REDUCED_HEIGHT))
-                mask = np.round(mask / 255)
-                assert mask.min() == 0 and mask.max() == 1
-                self.masks[i] = mask
+            if self.train_mode:
+                # load mask
+                with open(f"{self.cnf[ck.MASK_DIR_PATH]}/mask_{photo_id}.pkl", 'rb') as f:
+                    mask = pickle.load(f)
+                    mask = cv2.resize(mask, (mask.shape[1], REDUCED_HEIGHT))
+                    mask = np.round(mask / 255)
+                    assert mask.min() == 0 and mask.max() == 1
+                    self.masks[i] = mask
         self.on_epoch_end()
-
 
     def __len__(self):
         """
@@ -207,3 +208,32 @@ class DataLoader:
         print("Loading validation data")
         data_generator_validate = self.generator(self.cnf, df_validate)
         return data_generator_train, data_generator_validate
+
+
+class SubmissionDataLoader:
+    """
+    Loads submission data
+    """
+
+    def __init__(self, cnf: Dict):
+        """
+        Initialisation
+        :param cnf: config
+        """
+        self.cnf = cnf
+        self.df = None
+        self.submission_df = None
+        self.generator = StaticDataGenerator
+
+    def load_data(self):
+        """
+        Loads data from file
+        :return: NeuronDataGenerator
+        """
+        self.df = pd.read_csv(self.cnf[ck.SUBMISSION_CSV_PATH])
+        self.submission_df = self.df.groupby("id")
+        return self.generator({
+            ck.BATCH_SIZE: 1,
+            ck.SHUFFLE: False,
+            ck.IMAGES_DIR_PATH: self.cnf[ck.SUBMISSION_DIR_PATH]
+        }, self.submission_df, train_mode=False)
