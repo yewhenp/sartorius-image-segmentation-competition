@@ -1,6 +1,6 @@
 {
   "model_name": "U-NET",
-  "experiment_name": "unet_first_version",
+  "experiment_name": "unet_tversky_loss",
   "images_read_dir": "sartorius-cell-instance-segmentation/train",
   "train_csv_path": "sartorius-cell-instance-segmentation/train.csv",
   "mask_dir_path": "masks",
