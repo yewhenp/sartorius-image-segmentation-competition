@@ -15,3 +15,8 @@ class ConfigKeys:
     SAVE_WEIGHTS_EACH = "save_weights_each"
     GENERATOR_TYPE = "generator_type"
     EXPERIMENT_NAME = "experiment_name"
+    SUBMISSION_DIR_PATH = "submission_read_dir"
+    SUBMISSION_CSV_PATH = "submission_csv_dir"
+    USE_PRETRAINED = "use_pretrained"
+    DISPLAY = "display"
+    PREDICT_SUBMISSION = "predict_submission"
