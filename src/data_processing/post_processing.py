@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from .constants import HEIGHT, WIDTH
+from ..constants import HEIGHT, WIDTH
 
 
 def split_mask(probability, threshold=0.5, min_size=300):

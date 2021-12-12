@@ -1,16 +1,15 @@
 import pickle
-from typing import Union, Dict
-
 import cv2
 import numpy as np
 import pandas as pd
-from tensorflow import keras
-# from tensorflow.keras import layers
-# for some reasaon there is no Rescaling in above in my tensorflow version # TODO: fix tensorflow
-from tensorflow.python.keras import layers
-from .utilities import load_train_labels
-from .constants import WIDTH, HEIGHT, REDUCED_HEIGHT, ConfigKeys as ck
 import random
+
+from tensorflow import keras
+from typing import Dict
+from tensorflow.python.keras import layers
+
+from .utilities import load_train_labels
+from ..constants import WIDTH, HEIGHT, REDUCED_HEIGHT, ConfigKeys as ck
 
 
 class DynamicDataGenerator(keras.utils.Sequence):

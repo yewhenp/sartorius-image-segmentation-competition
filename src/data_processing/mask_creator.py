@@ -1,13 +1,14 @@
 import pickle
 import json
+import os
 import numpy as np
+
 from tqdm.auto import tqdm
 from argparse import ArgumentParser
-from config_keys import ConfigKeys as ck
-import os
-from utilities import load_train_labels
-from constants import ConfigKeys as ck, HEIGHT, WIDTH
 from typing import Dict
+
+from utilities import load_train_labels
+from ..constants import ConfigKeys as ck, HEIGHT, WIDTH
 
 
 def group_to_mask_image(group):

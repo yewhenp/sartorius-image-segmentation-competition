@@ -1,6 +1,10 @@
 import numpy as np
 import tensorflow as tf
 
+from typing import List, Dict
+
+from .constants import ConfigKeys as ck
+
 
 class MyIoU(tf.keras.metrics.Metric):
     def __init__(self, name=None, dtype=None):
@@ -86,3 +90,13 @@ class MyIoU(tf.keras.metrics.Metric):
         config = {'num_classes': self.num_classes}
         base_config = super(MyIoU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+METRICS = {
+    "MyIoU": MyIoU,
+    "MeanIoU": tf.keras.metrics.MeanIoU(2)
+}
+
+
+def get_metrics(cnf: Dict) -> List:
+    return [METRICS[metric] for metric in cnf[ck.METRICS]]

@@ -1,5 +1,5 @@
 import pandas as pd
-from .constants import WIDTH, HEIGHT
+from ..constants import WIDTH, HEIGHT
 
 
 def load_train_labels(path: str) -> pd.DataFrame:

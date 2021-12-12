@@ -2,6 +2,7 @@ WIDTH = 704
 HEIGHT = 520
 REDUCED_HEIGHT = 512
 
+
 class ConfigKeys:
     MODEL_NAME = "model_name"
     IMAGES_DIR_PATH = "images_read_dir"
@@ -20,3 +21,7 @@ class ConfigKeys:
     USE_PRETRAINED = "use_pretrained"
     DISPLAY = "display"
     PREDICT_SUBMISSION = "predict_submission"
+    LOSS_FUNCTION = "loss_function"
+    LOSS_PARAMETERS = "loss_params"
+    OPTIMIZER = "optimizer"
+    METRICS = "metrics"
