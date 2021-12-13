@@ -93,7 +93,9 @@ def convert_to_jupyter(order, config_path, src, verbose, flatten=False):
 
     # config dict
     config = json.load(open(config_path, 'r'))
-    config["submission_read_dir"] = "/kaggle/input/sartorius-cell-instance-segmentation/test"
+    config["submission_read_dir"] = TEST_PATH
+    config["images_read_dir"] = TRAIN_PATH
+    config["train_csv_path"] = TRAIN_CSV
     config["submission_csv_dir"] = "/kaggle/input/sartorius-cell-instance-segmentation/sample_submission.csv"
     config_str = json.dumps(config, indent=4)
     config_str = config_str.replace("null", "None").replace("true", "True").replace("false", "False")
