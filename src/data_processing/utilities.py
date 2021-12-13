@@ -1,5 +1,8 @@
 import pandas as pd
+
+# START PROJECT IMPORTS
 from ..constants import WIDTH, HEIGHT
+# END PROJECT_IMPORTS
 
 
 def load_train_labels(path: str) -> pd.DataFrame:

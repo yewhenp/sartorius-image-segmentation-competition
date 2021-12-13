@@ -2,7 +2,9 @@ import cv2
 import numpy as np
 import pandas as pd
 
+# START PROJECT IMPORTS
 from ..constants import HEIGHT, WIDTH
+# END PROJECT_IMPORTS
 
 
 def split_mask(probability, threshold=0.5, min_size=300):
@@ -29,7 +31,7 @@ def submask2rle(mask):
 
 
 def mask2rle(id, mask):
-    main_mask = cv2.resize(mask.astype("uint8"), (WIDTH, HEIGHT), interpolation=cv2.INTER_AREA)
+    main_mask = cv2.resize(mask, (WIDTH, HEIGHT), interpolation=cv2.INTER_AREA)
     submasks = split_mask(main_mask)
     ids = []
     pred = []

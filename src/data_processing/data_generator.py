@@ -6,10 +6,12 @@ import random
 
 from tensorflow import keras
 from typing import Dict
-from tensorflow.python.keras import layers
+from tensorflow.python.keras import layers as p_layers
 
+# START PROJECT IMPORTS
 from .utilities import load_train_labels
 from ..constants import WIDTH, HEIGHT, REDUCED_HEIGHT, ConfigKeys as ck
+# END PROJECT_IMPORTS
 
 
 class DynamicDataGenerator(keras.utils.Sequence):
@@ -32,7 +34,7 @@ class DynamicDataGenerator(keras.utils.Sequence):
         self.image_dim = (REDUCED_HEIGHT, WIDTH)     # TODO: try not reshape
         self.channels = 3
         self.indexes = []
-        self.rescaling = layers.Rescaling(1. / 255) # TODO: -mean / std
+        self.rescaling = p_layers.Rescaling(1. / 255) # TODO: -mean / std
         self.on_epoch_end()
 
     def __len__(self):
@@ -113,7 +115,7 @@ class StaticDataGenerator(keras.utils.Sequence):
 
         self.n_images = len(grouped_labels)
         photo_ids = list(grouped_labels.groups.keys())
-        rescaling = layers.Rescaling(1. / 255) # TODO: -mean / std
+        rescaling = p_layers.Rescaling(1. / 255) # TODO: -mean / std
 
         self.images = np.ndarray((self.n_images, *self.image_dim, self.channels))
         self.masks = np.ndarray((self.n_images, *self.image_dim))

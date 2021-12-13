@@ -1,5 +1,5 @@
 {
-  "experiment_name": "unet_small_tversky_loss3",
+  "experiment_name": "unet_small_tversky_loss2",
 
   "MODEL_RELATED_STUFF": null,
   "model_name": "U-NET",
@@ -30,7 +30,7 @@
 
 
   "OTHER_STUFF": null,
-  "use_pretrained": false,
+  "use_pretrained": true,
   "display": true,
-  "predict_submission": false
+  "predict_submission": true
 }

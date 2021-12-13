@@ -1,8 +1,10 @@
 from tensorflow import keras
-from .unet import get_unet
 from typing import Tuple, Dict
 
+# START PROJECT IMPORTS
 from ..constants import ConfigKeys as ck
+from .unet import get_unet
+# END PROJECT_IMPORTS
 
 
 class ModelNames:
