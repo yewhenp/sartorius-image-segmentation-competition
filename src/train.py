@@ -74,3 +74,11 @@ def train_model(cnf: Dict, data_generators=None):
               callbacks=[wdb])
 
     return model
+
+
+if __name__ == '__main__':
+    print("Preparing data generators...")
+    dl = DataLoader(cnf, cnf[ck.GENERATOR_TYPE])
+    dl.load_data()
+    data_generator_train, data_generator_validate = dl.split_data()
+    model = train_model(cnf, (data_generator_train, data_generator_validate))

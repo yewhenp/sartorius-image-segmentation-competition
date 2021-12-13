@@ -9,6 +9,10 @@ END_IMP_SEQUENCE = "# END PROJECT_IMPORTS"
 MARKDOWN_SEQUENCE = "<markdown>"
 CODE_SEQUENCE = "<code>"
 
+TRAIN_CSV = "../input/sartorius-cell-instance-segmentation/train.csv"
+TRAIN_PATH = "../input/sartorius-cell-instance-segmentation/train"
+TEST_PATH = "../input/sartorius-cell-instance-segmentation/test"
+
 
 def read_file(path: str) -> List[str]:
     source = []
@@ -49,11 +53,11 @@ def add_markdown(notebook: Dict, source: List[str]) -> None:
     )
 
 
-def convert_to_jupyter(config_path, src, verbose):
-    if not os.path.exists("convert_order.json"):
+def convert_to_jupyter(order, config_path, src, verbose, flatten=False):
+    if not os.path.exists(order):
         print("Please create convert_order.json in script directory and fill it with needed data")
         exit(1)
-    convert_order = json.load(open("convert_order.json", 'r'))
+    convert_order = json.load(open(order, 'r'))
 
     notebook = {
         "cells": [],
@@ -87,37 +91,69 @@ def convert_to_jupyter(config_path, src, verbose):
             fullpath = os.path.join(subdir, file)
             project_files[file] = fullpath
 
-    # preprocess and add each cell
-    for cell in convert_order["cells"]:
-        if cell.startswith(MARKDOWN_SEQUENCE):
-            source = cell[len(MARKDOWN_SEQUENCE):].split("\n")
-            for idx, line in enumerate(source):
-                source[idx] = line + "\n"
-            add_markdown(notebook, source)
-            continue
-
-        if cell.startswith(CODE_SEQUENCE):
-            filename = cell[len(CODE_SEQUENCE):]
-            if filename in project_files:
-                source = read_file(project_files[filename])
-            else:
-                source = filename.split("\n")
-                for idx, line in enumerate(source):
-                    source[idx] = line + "\n"
-            add_code(notebook, source)
-
-    # add config and predict call
+    # config dict
     config = json.load(open(config_path, 'r'))
-    config["submission_read_dir"] = "/kaggle/input/sartorius-cell-instance-segmentation"
+    config["submission_read_dir"] = "/kaggle/input/sartorius-cell-instance-segmentation/test"
     config["submission_csv_dir"] = "/kaggle/input/sartorius-cell-instance-segmentation/sample_submission.csv"
     config_str = json.dumps(config, indent=4)
-    source = config_str.split("\n")
-    for idx, line in enumerate(source):
-        source[idx] = line.replace("null", "None").replace("true", "True").replace("false", "False") + "\n"
-    add_markdown(notebook, ["Create configuration dict\n"])
-    add_code(notebook, ["cnf=\\\n", *source])
+    config_str = config_str.replace("null", "None").replace("true", "True").replace("false", "False")
+    config_definition_source = config_str.split("\n")
+    for idx, line in enumerate(config_definition_source):
+        config_definition_source[idx] = line + "\n"
+    config_definition_source = ["cnf=\\\n", *config_definition_source]
 
-    add_code(notebook, ["predict_submission(cnf, \"val_best.h5\")\n"])
+    if not flatten:
+        # add config
+        add_markdown(notebook, ["Create configuration dict\n"])
+        add_code(notebook, config_definition_source)
+
+        # preprocess and add each cell
+        for cell in convert_order["cells"]:
+            if cell.startswith(MARKDOWN_SEQUENCE):
+                source = cell[len(MARKDOWN_SEQUENCE):].split("\n")
+                for idx, line in enumerate(source):
+                    source[idx] = line + "\n"
+                add_markdown(notebook, source)
+                continue
+
+            if cell.startswith(CODE_SEQUENCE):
+                filename = cell[len(CODE_SEQUENCE):]
+                if filename in project_files:
+                    source = read_file(project_files[filename])
+                else:
+                    source = filename.split("\n")
+                    for idx, line in enumerate(source):
+                        source[idx] = line + "\n"
+                add_code(notebook, source)
+
+        # add predict call
+        add_code(notebook, ["predict_submission(cnf, \"/kaggle/input/validation-test-weights/val_best.h5\")\n"])
+    else:
+        source = []
+        source += ["# Create configuration dict\n"]
+        source += config_definition_source
+        # preprocess and add each cell
+        for cell in convert_order["cells"]:
+            if cell.startswith(MARKDOWN_SEQUENCE):
+                msource = cell[len(MARKDOWN_SEQUENCE):].split("\n")
+                for idx, line in enumerate(msource):
+                    msource[idx] = "# " + line + "\n"
+                source += msource
+                continue
+
+            if cell.startswith(CODE_SEQUENCE):
+                filename = cell[len(CODE_SEQUENCE):]
+                if filename in project_files:
+                    csource = read_file(project_files[filename])
+                else:
+                    verbose and print(f"Note: {filename} file was not found")
+                    csource = filename.split("\n")
+                    for idx, line in enumerate(csource):
+                        csource[idx] = line + "\n"
+                source += csource
+
+        source += ["predict_submission(cnf, \"/kaggle/input/validation-test-weights/val_best.h5\")\n"]
+        add_code(notebook, source)
 
     if verbose:
         pprint(notebook)
@@ -128,7 +164,9 @@ def convert_to_jupyter(config_path, src, verbose):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, required=True)
+    parser.add_argument("--order", type=str, default="test_convert_order.json")
     parser.add_argument("--src", type=str, default="src")
     parser.add_argument("--verbose", action="store_const", const=True, default=False)
+    parser.add_argument("--flatten", action="store_const", const=True, default=False)
     args = parser.parse_args()
-    convert_to_jupyter(args.config, args.src, args.verbose)
+    convert_to_jupyter(args.order, args.config, args.src, args.verbose, args.flatten)

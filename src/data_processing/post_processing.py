@@ -1,4 +1,5 @@
 import cv2
+# from cv2 import cv2
 import numpy as np
 import pandas as pd
 
@@ -8,7 +9,7 @@ from ..constants import HEIGHT, WIDTH
 
 
 def split_mask(probability, threshold=0.5, min_size=300):
-    mask = cv2.threshold(probability, threshold, 1, cv2.THRESH_BINARY)[1]
+    mask = 1 - cv2.threshold(probability, threshold, 1, cv2.THRESH_BINARY)[1]
     num_component, component = cv2.connectedComponents(mask.astype(np.uint8))
     predictions = []
     for c in range(1, num_component):
