@@ -32,8 +32,9 @@ def main(args: Namespace):
         model.load_weights(weights_path)
 
     if cnf[ck.DISPLAY]:
-        y_hat = model.predict(data_generator_validate[0][0])
-        display([data_generator_validate[0][0][0], data_generator_validate[0][1][0], y_hat[0]])
+        i = 0
+        y_hat = model.predict(data_generator_validate[i][0])
+        display([data_generator_validate[i][0][0], data_generator_validate[i][1][0], y_hat[0]])
 
 
 """

@@ -8,7 +8,7 @@ from .data_processing.data_generator import SubmissionDataLoader
 from .data_processing.post_processing import mask2rle
 from .models import get_model
 from .constants import REDUCED_HEIGHT, WIDTH, ConfigKeys as ck
-# from .visualisation import display
+from .visualisation import display
 # END PROJECT_IMPORTS
 
 
@@ -28,6 +28,7 @@ def predict_submission(cnf: Dict, weights_path: str = None) -> None:
         image_id = submission_dl.df.iloc[i]['id']
         mask_df = mask2rle(image_id, y_hat[0])
         submission = pd.concat([submission, mask_df])
-        # display([data_generator_submission[i][0][0], data_generator_submission[i][1][0], y_hat[0]])
+        # if cnf[ck.DISPLAY]:
+        #     display([data_generator_submission[i][0][0], data_generator_submission[i][1][0], y_hat[0]])
 
     submission.to_csv("submission.csv", index=False)

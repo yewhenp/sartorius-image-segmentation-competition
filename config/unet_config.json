@@ -32,5 +32,5 @@
   "OTHER_STUFF": null,
   "use_pretrained": true,
   "display": true,
-  "predict_submission": true
+  "predict_submission": false
 }
