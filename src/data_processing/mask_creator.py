@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 from typing import Dict
 
 # START PROJECT IMPORTS
-from utilities import load_train_labels
+from .utilities import load_train_labels
 from ..constants import ConfigKeys as ck, HEIGHT, WIDTH
 # END PROJECT_IMPORTS
 
