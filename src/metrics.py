@@ -5,6 +5,7 @@ from typing import List, Dict
 
 # START PROJECT IMPORTS
 from .constants import ConfigKeys as ck
+from .data_processing.post_processing import split_mask
 # END PROJECT_IMPORTS
 
 
@@ -94,9 +95,50 @@ class MyIoU(tf.keras.metrics.Metric):
         return dict(list(base_config.items()) + list(config.items()))
 
 
+def competition_metric(y, y_hat):
+    thresholds = (0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95)
+    splitted_y = split_mask(y, min_size=20)
+    splitted_yhat = split_mask(y_hat, min_size=20)
+
+    precision = 0
+
+    for t in thresholds:
+        # matches = []
+        tp = 0
+        unmatched_yhat_entities = list(range(len(splitted_yhat)))
+
+        for yi, y_entity in enumerate(splitted_y):
+            for yhati in unmatched_yhat_entities:
+                yhat_entity = splitted_yhat[yhati]
+
+                y_flat = set(np.where(y_entity.flatten() == 1)[0])
+                yhat_flat = set(np.where(yhat_entity.flatten() == 1)[0])
+                # if iou >= thresh
+                if len((y_flat & yhat_flat)) / len((y_flat | yhat_flat)) >= t:
+                    # tp += len(y_flat & yhat_flat)
+                    # fp += len(y_flat - yhat_flat)
+                    # fn += len(yhat_flat - y_flat)
+                    tp += 1
+                    unmatched_yhat_entities.remove(yhati)
+                    break
+        fn = len(splitted_y) - tp
+        fp = len(unmatched_yhat_entities)
+
+
+        if tp == 0:
+            # print(0)
+            continue
+        # print(tp / (tp + fp + fn))
+        precision += tp / (tp + fp + fn)
+    
+    precision /= len(thresholds)
+    return precision
+
+
 METRICS = {
     "MyIoU": MyIoU,
-    "MeanIoU": tf.keras.metrics.MeanIoU(2)
+    "MeanIoU": tf.keras.metrics.MeanIoU(2),
+    "competition_metric": competition_metric
 }
 
 

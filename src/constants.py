@@ -25,6 +25,7 @@ class ConfigKeys:
     LOSS_PARAMETERS = "loss_params"
     OPTIMIZER = "optimizer"
     METRICS = "metrics"
+    CALC_METRICS = "calc_metrics"
 
 
 ck = ConfigKeys

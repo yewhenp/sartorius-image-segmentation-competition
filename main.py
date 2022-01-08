@@ -1,13 +1,17 @@
 import json
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from argparse import ArgumentParser, Namespace
 
-from src.constants import ConfigKeys as ck, WIDTH, REDUCED_HEIGHT
+from src.constants import ConfigKeys as ck, WIDTH, REDUCED_HEIGHT, HEIGHT
 from src.data_processing.data_generator import DataLoader
+from src.metrics import competition_metric
 from src.models import get_model
 from src.visualisation import display
 from src.train import train_model
 from src.predict import predict_submission
+import numpy as np
+from tqdm import trange
 
 
 def main(args: Namespace):
@@ -35,6 +39,19 @@ def main(args: Namespace):
         i = 0
         y_hat = model.predict(data_generator_validate[i][0])
         display([data_generator_validate[i][0][0], data_generator_validate[i][1][0], y_hat[0]])
+    
+    if cnf[ck.CALC_METRICS]:
+        mean_comp_metric = 0
+        for i in trange(len(data_generator_validate)):
+            # i = 0
+            y = data_generator_validate[i][1][0]
+            y_hat = np.squeeze(model.predict(data_generator_validate[i][0])[0])
+            met = competition_metric(y.astype(float), y_hat.astype(float))
+            print(met)
+            mean_comp_metric += met
+        print(f"Mean competition metric: {mean_comp_metric / len(len(data_generator_validate))}")
+        # for i, metric_name in enumerate(cnf[ck.METRICS]):
+        #     print(f"{metric_name}: {metrics[i](y, y_hat)}")
 
 
 """

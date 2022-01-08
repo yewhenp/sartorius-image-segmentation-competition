@@ -8,7 +8,7 @@
     "beta": 0.5
   },
   "optimizer": "adam",
-  "metrics": ["MeanIoU"],
+  "metrics": ["MeanIoU", "competition_metric"],
 
 
   "TRAINING_RELATED_STUFF": null,
@@ -30,7 +30,8 @@
 
 
   "OTHER_STUFF": null,
-  "use_pretrained": false,
+  "use_pretrained": true,
   "display": false,
-  "predict_submission": false
+  "predict_submission": false, 
+  "calc_metrics": true
 }

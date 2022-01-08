@@ -6,7 +6,6 @@ import random
 
 from tensorflow import keras
 from typing import Dict
-from tensorflow.python.keras import layers as p_layers
 
 # START PROJECT IMPORTS
 from .utilities import load_train_labels
@@ -34,7 +33,7 @@ class DynamicDataGenerator(keras.utils.Sequence):
         self.image_dim = (REDUCED_HEIGHT, WIDTH)     # TODO: try not reshape
         self.channels = 3
         self.indexes = []
-        self.rescaling = p_layers.Rescaling(1. / 255) # TODO: -mean / std
+        # self.rescaling = layers.Rescaling(1. / 255) # TODO: -mean / std
         self.on_epoch_end()
 
     def __len__(self):
@@ -75,8 +74,10 @@ class DynamicDataGenerator(keras.utils.Sequence):
             image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
             # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             image = cv2.resize(image, (image.shape[1], REDUCED_HEIGHT))
-            image = self.rescaling(image)
-            assert 0 <= image.numpy().min() < image.numpy().max() <= 1
+            image = image.astype(float) / 255
+            # image = self.rescaling(image)
+            # assert 0 <= image.numpy().min() < image.numpy().max() <= 1
+            assert 0 <= image.min() < image.max() <= 1
             x[i, ] = image
         return x
 
@@ -115,7 +116,7 @@ class StaticDataGenerator(keras.utils.Sequence):
 
         self.n_images = len(grouped_labels)
         photo_ids = list(grouped_labels.groups.keys())
-        rescaling = p_layers.Rescaling(1. / 255) # TODO: -mean / std
+        # rescaling = layers.Rescaling(1. / 255) # TODO: -mean / std
 
         self.images = np.ndarray((self.n_images, *self.image_dim, self.channels))
         self.masks = np.ndarray((self.n_images, *self.image_dim))
@@ -123,8 +124,10 @@ class StaticDataGenerator(keras.utils.Sequence):
         for i, photo_id in enumerate(photo_ids):
             # load image
             image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
-            image = rescaling(cv2.resize(image, (image.shape[1], REDUCED_HEIGHT)))       # normalize
-            assert 0 <= image.numpy().min() < image.numpy().max() <= 1
+            # image = rescaling(cv2.resize(image, (image.shape[1], REDUCED_HEIGHT)))       # normalize
+            image = cv2.resize(image, (image.shape[1], REDUCED_HEIGHT)).astype(float) / 255
+            # assert 0 <= image.numpy().min() < image.numpy().max() <= 1
+            assert 0 <= image.min() < image.max() <= 1
             self.images[i] = image
 
             if self.train_mode:
