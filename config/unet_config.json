@@ -1,5 +1,5 @@
 {
-  "experiment_name": "unet_small_tversky_loss2",
+  "experiment_name": "unet_big_tversky_loss-64-128-256-512-1024-dropout.3",
 
   "MODEL_RELATED_STUFF": null,
   "model_name": "U-NET",
@@ -15,7 +15,7 @@
   "train_ratio": 0.8,
   "batch_size": 2,
   "shuffle": true,
-  "epochs": 1,
+  "epochs": 100,
   "save_weights_each": 5,
   "weights_dir": "weights",
   "generator_type": "dynamic",
@@ -30,7 +30,7 @@
 
 
   "OTHER_STUFF": null,
-  "use_pretrained": true,
-  "display": true,
+  "use_pretrained": false,
+  "display": false,
   "predict_submission": false
 }
