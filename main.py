@@ -1,6 +1,6 @@
 import json
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
+# os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from argparse import ArgumentParser, Namespace
 
 from src.constants import ConfigKeys as ck, WIDTH, REDUCED_HEIGHT, HEIGHT
@@ -10,6 +10,7 @@ from src.models import get_model
 from src.visualisation import display
 from src.train import train_model
 from src.predict import predict_submission
+from src.models.unet_watershed import calc_watershed_transform
 import numpy as np
 from tqdm import trange
 
@@ -38,18 +39,24 @@ def main(args: Namespace):
     if cnf[ck.DISPLAY]:
         i = 0
         y_hat = model.predict(data_generator_validate[i][0])
-        display([data_generator_validate[i][0][0], data_generator_validate[i][1][0], y_hat[0]])
+        rez = y_hat[0]
+        example = data_generator_validate[i][1][0]
+        if example.shape[-1] > 1:
+            example = calc_watershed_transform(example)
+        display([data_generator_validate[i][0][0], example, rez])
     
     if cnf[ck.CALC_METRICS]:
         mean_comp_metric = 0
         for i in trange(len(data_generator_validate)):
             # i = 0
-            y = data_generator_validate[i][1][0]
-            y_hat = np.squeeze(model.predict(data_generator_validate[i][0])[0])
+            y = data_generator_validate[i][1][0][:, :, 0]
+            y_hat = model.predict(data_generator_validate[i][0])
+            print("\n predicted")
+            y_hat = np.squeeze(y_hat)
             met = competition_metric(y.astype(float), y_hat.astype(float))
             print(met)
             mean_comp_metric += met
-        print(f"Mean competition metric: {mean_comp_metric / len(len(data_generator_validate))}")
+        print(f"Mean competition metric: {mean_comp_metric / len(data_generator_validate)}")
         # for i, metric_name in enumerate(cnf[ck.METRICS]):
         #     print(f"{metric_name}: {metrics[i](y, y_hat)}")
 

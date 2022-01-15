@@ -1,6 +1,7 @@
 wandb/
 weights/
 masks/
+masks_water/
 sartorius-cell-instance-segmentation/
 .idea/
 sartorius-cell-instance-segmentation.zip

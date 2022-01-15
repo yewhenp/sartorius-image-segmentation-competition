@@ -87,12 +87,25 @@ class DynamicDataGenerator(keras.utils.Sequence):
         :param photo_ids: list of ids each representing one image
         :return: batch of masks
         """
-        y = np.empty((self.batch_size, *self.image_dim), dtype="int")
+        y = np.empty((self.batch_size, *self.image_dim, 1), dtype="int")
+        flag = True
         for i, photo_id in enumerate(photo_ids):
             with open(f"{self.cnf[ck.MASK_DIR_PATH]}/mask_{photo_id}.pkl", 'rb') as f:
                 image = pickle.load(f)
-                image = cv2.resize(image, (image.shape[1], REDUCED_HEIGHT))
-                image = np.round(image / 255)
+                if len(image.shape) == 2:
+                    image = cv2.resize(image, (image.shape[1], REDUCED_HEIGHT))
+                    image = np.round(image / 255)
+                    image = np.reshape(image, (*image.shape, 1))
+                else:
+                    new_images = []
+                    for idx in range(image.shape[0]):
+                        mask = cv2.resize(image[idx], (WIDTH, REDUCED_HEIGHT)) / 255
+                        new_images.append(mask)
+                    image = np.asarray(new_images)
+                    image = np.transpose(image, (1, 2, 0))
+                    if flag:
+                        flag = False
+                        y = np.empty((self.batch_size, *image.shape), dtype="int")
                 assert image.min() == 0 and image.max() == 1
                 y[i] = image
         return y
@@ -111,6 +124,7 @@ class StaticDataGenerator(keras.utils.Sequence):
         self.train_mode = train_mode
 
         self.image_dim = (REDUCED_HEIGHT, WIDTH)     # TODO: try not reshape
+        self.new_dim = None
         self.channels = 3
         self.indexes = []
 
@@ -119,8 +133,9 @@ class StaticDataGenerator(keras.utils.Sequence):
         # rescaling = layers.Rescaling(1. / 255) # TODO: -mean / std
 
         self.images = np.ndarray((self.n_images, *self.image_dim, self.channels))
-        self.masks = np.ndarray((self.n_images, *self.image_dim))
+        self.masks = np.ndarray((self.n_images, *self.image_dim, 1))
 
+        flag = True
         for i, photo_id in enumerate(photo_ids):
             # load image
             image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
@@ -134,8 +149,21 @@ class StaticDataGenerator(keras.utils.Sequence):
                 # load mask
                 with open(f"{self.cnf[ck.MASK_DIR_PATH]}/mask_{photo_id}.pkl", 'rb') as f:
                     mask = pickle.load(f)
-                    mask = cv2.resize(mask, (mask.shape[1], REDUCED_HEIGHT))
-                    mask = np.round(mask / 255)
+                    if len(mask.shape) == 2:
+                        mask = cv2.resize(mask, (mask.shape[1], REDUCED_HEIGHT))
+                        mask = np.round(mask / 255)
+                        mask = np.reshape(mask, (*mask.shape, 1))
+                    else:
+                        new_images = []
+                        for idx in range(mask.shape[0]):
+                            mask_curr = cv2.resize(mask[idx], (WIDTH, REDUCED_HEIGHT)) / 255
+                            new_images.append(mask_curr)
+                        mask = np.asarray(new_images)
+                        mask = np.transpose(mask, (1, 2, 0))
+                        if flag:
+                            flag = False
+                            self.masks = np.empty((self.n_images, *mask.shape))
+                            self.new_dim = mask.shape
                     assert mask.min() == 0 and mask.max() == 1
                     self.masks[i] = mask
         self.on_epoch_end()
@@ -156,7 +184,10 @@ class StaticDataGenerator(keras.utils.Sequence):
         indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
 
         x = np.empty((self.batch_size, *self.image_dim, self.channels), dtype="float")
-        y = np.empty((self.batch_size, *self.image_dim), dtype="int")
+        if self.new_dim is None:
+            y = np.empty((self.batch_size, *self.image_dim), dtype="int")
+        else:
+            y = np.empty((self.batch_size, *self.new_dim), dtype="int")
         for i, idx in enumerate(indexes):
             x[i] = self.images[idx]
             y[i] = self.masks[idx]
