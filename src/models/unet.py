@@ -14,14 +14,14 @@ def conv_block(input_data, num_filters):
     return x
 
 
-def encoder_block(input_data, num_filters, dropout_prob=0.3):
+def encoder_block(input_data, num_filters, dropout_prob=0.5):
     x = conv_block(input_data, num_filters)
     p = layers.MaxPool2D((2, 2))(x)
     p = layers.Dropout(dropout_prob)(p)
     return x, p
 
 
-def decoder_block(input_data, skip_features, num_filters, dropout_prob=0.3):
+def decoder_block(input_data, skip_features, num_filters, dropout_prob=0.5):
     x = layers.Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(input_data)
     x = layers.Concatenate()([x, skip_features])
     x = layers.Dropout(dropout_prob)(x)
