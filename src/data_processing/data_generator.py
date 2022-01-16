@@ -315,8 +315,8 @@ class MyMrcnnDataSet(MrcnnDataSet):
         self.new_dim = None
         self.channels = 3
 
-        # self.n_images = len(grouped_labels)
-        self.n_images = 20
+        self.n_images = len(grouped_labels)
+        # self.n_images = 20
         photo_ids = list(grouped_labels.groups.keys())
         self.images = np.ndarray((self.n_images, *self.image_dim, self.channels))
         self.masks = np.ndarray((self.n_images, *self.image_dim, 1))
@@ -325,8 +325,8 @@ class MyMrcnnDataSet(MrcnnDataSet):
 
         flag = True
         for i, photo_id in enumerate(photo_ids):
-            if i == 20:
-                break
+            # if i == 20:
+                # break
             # load image
             image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
             # image = rescaling(cv2.resize(image, (image.shape[1], REDUCED_HEIGHT)))       # normalize
