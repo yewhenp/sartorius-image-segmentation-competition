@@ -86,13 +86,14 @@ Available 2 metrics:
 
 To set metrics to use during training, add their names into "metrics" config field.
 
-### Training plots
+### Achieved results
+
+№### Training plots
 ![U-NET loss](img/loss_funciton_unet)
 ![U-NET Mean IOU](img/mean_iou_unet)
 ![WaterShed loss](img/mean_iou_watershed)
 ![WaterShed Mean IOU](img/loss_funciton_unet)
 ![All Mean IOU](img/mean_iou_all)
 
-### Achieved results
 - Mean IOU ~ 0.8
 - Competition metric ~ 0.065
