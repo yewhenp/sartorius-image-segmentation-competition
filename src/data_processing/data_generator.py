@@ -361,18 +361,11 @@ class MyMrcnnDataSet(MrcnnDataSet):
                     self.masks[i] = mask
 
     def load_image(self, image_id):
-        # return np.array([self.images[image_id]])
-        # print("<<<<<<<<<<<<<<<<<")
-        # print( np.expand_dims(self.images[image_id], -1).shape)
-        # return np.expand_dims(self.images[image_id], -1)
         return self.images[image_id]
 
     def load_mask(self, image_id):
         """Generate instance masks for shapes of the given image ID.
         """
-        # mask = 
-        # print(">>>>>>>>>>>>>>")
-        # print(np.expand_dims(self.masks[image_id].astype(bool), -1).shape)
         return self.masks[image_id].astype(bool), np.array([1,], dtype=np.int32)
 
 def mrcnn_get_train_valid_datasets(cnf: Dict):

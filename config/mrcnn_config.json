@@ -16,7 +16,7 @@
 
   "TRAINING_RELATED_STUFF": null,
   "train_ratio": 0.8,
-  "batch_size": 1,
+  "batch_size": 2,
   "shuffle": true,
   "epochs": 2,
   "save_weights_each": 5,
