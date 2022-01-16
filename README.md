@@ -98,3 +98,10 @@ To set metrics to use during training, add their names into "metrics" config fie
 
 - Mean IOU ~ 0.8
 - Competition metric ~ 0.065
+
+
+|                      |    U-NET    |    DWT        |
+| :---                 |    :----:   |          ---: |
+| MeanIoU              | 0.7899      | 0.6928        |
+| Competition metric   | 0.051       | 0.065         |
+| Train time per epoch | 81s         | 194s          |
