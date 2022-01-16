@@ -1,4 +1,6 @@
 import os
+
+import numpy as np
 import pandas as pd
 
 from typing import Dict
@@ -28,6 +30,7 @@ def predict_submission(cnf: Dict, weights_path: str = None) -> None:
         image_id = submission_dl.df.iloc[i]['id']
         mask_df = mask2rle(image_id, y_hat[0])
         submission = pd.concat([submission, mask_df])
+        display([data_generator_submission[i][0], np.zeros_like(data_generator_submission[i][0]), y_hat[0]])
         # if cnf[ck.DISPLAY]:
         #     display([data_generator_submission[i][0][0], data_generator_submission[i][1][0], y_hat[0]])
 

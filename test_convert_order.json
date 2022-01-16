@@ -12,6 +12,9 @@
     "<markdown>Define models: Unet",
     "<code>unet.py",
 
+    "<markdown>Define models: Unet Watershed",
+    "<code>unet_watershed.py",
+
     "<markdown>Define models getter",
     "<code>models.py",
 

@@ -190,7 +190,8 @@ class StaticDataGenerator(keras.utils.Sequence):
             y = np.empty((self.batch_size, *self.new_dim), dtype="int")
         for i, idx in enumerate(indexes):
             x[i] = self.images[idx]
-            y[i] = self.masks[idx]
+            if self.train_mode:
+                y[i] = self.masks[idx]
 
         return x, y
 

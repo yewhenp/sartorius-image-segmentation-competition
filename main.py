@@ -1,7 +1,9 @@
 import json
 import os
+import tensorflow as tf
 # os.environ["CUDA_VISIBLE_DEVICES"] = ""
 from argparse import ArgumentParser, Namespace
+import multiprocessing as mp
 
 from src.constants import ConfigKeys as ck, WIDTH, REDUCED_HEIGHT, HEIGHT
 from src.data_processing.data_generator import DataLoader
@@ -16,6 +18,8 @@ from tqdm import trange
 
 
 def main(args: Namespace):
+    np.random.seed(2021)
+    tf.random.set_seed(2021)
     with open(args.config) as file:
         cnf = json.load(file)
 
@@ -37,28 +41,24 @@ def main(args: Namespace):
         model.load_weights(weights_path)
 
     if cnf[ck.DISPLAY]:
-        i = 0
-        y_hat = model.predict(data_generator_validate[i][0])
-        rez = y_hat[0]
-        example = data_generator_validate[i][1][0]
-        if example.shape[-1] > 1:
-            example = calc_watershed_transform(example)
-        display([data_generator_validate[i][0][0], example, rez])
-    
-    if cnf[ck.CALC_METRICS]:
-        mean_comp_metric = 0
-        for i in trange(len(data_generator_validate)):
-            # i = 0
-            y = data_generator_validate[i][1][0][:, :, 0]
+        for i in range(10):
             y_hat = model.predict(data_generator_validate[i][0])
-            print("\n predicted")
-            y_hat = np.squeeze(y_hat)
-            met = competition_metric(y.astype(float), y_hat.astype(float))
-            print(met)
-            mean_comp_metric += met
-        print(f"Mean competition metric: {mean_comp_metric / len(data_generator_validate)}")
-        # for i, metric_name in enumerate(cnf[ck.METRICS]):
-        #     print(f"{metric_name}: {metrics[i](y, y_hat)}")
+            rez = y_hat[0]
+            example = data_generator_validate[i][1][0]
+            if example.shape[-1] > 1:
+                example = calc_watershed_transform(example)
+            display([data_generator_validate[i][0][0], example, rez])
+
+    if cnf[ck.CALC_METRICS]:
+        ys = []
+        yhats = []
+        for i in trange(len(data_generator_validate)):
+            y_hat = model.predict(data_generator_validate[i][0])
+            for img_ind in range(y_hat.shape[0]):
+                ys.append(data_generator_validate[i][1][img_ind][:, :, 0])
+                yhats.append(y_hat[img_ind])
+
+        print(f"Mean competition metric: {competition_metric(ys, yhats)}")
 
 
 """

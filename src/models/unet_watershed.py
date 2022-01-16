@@ -7,7 +7,7 @@ from .unet import get_unet
 # END PROJECT_IMPORTS
 
 
-def calc_watershed_transform(data, threshold=0.5):
+def calc_watershed_transform(data, threshold=0.7):
     data = 255 * data
     pix_threshold = 255 * threshold
 
@@ -15,12 +15,12 @@ def calc_watershed_transform(data, threshold=0.5):
     energy = np.mean(data, axis=2)
     energy[energy < pix_threshold] = 0
 
-    # energy = energy.astype("int")
     mask[mask < pix_threshold] = 0
     mask[mask > 0] = 1
 
-    mrkr = label(energy)
-    return watershed(-energy, mrkr, mask=mask, watershed_line=True)
+    # mrkr = label(energy)
+    # return watershed(-energy, mrkr, mask=mask, watershed_line=True)
+    return watershed(-energy, mask=mask, watershed_line=True)
 
 
 class UnetWatershed:

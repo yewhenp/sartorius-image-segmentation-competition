@@ -13,6 +13,6 @@ def display(display_list):
         if len(img.shape) == 2:
             img = cv2.merge([img, img, img])
         img = cv2.normalize(img, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-        plt.imshow(np.array(img))
+        plt.imshow(np.squeeze(np.array(img)))
         ax.set_title(title[i])
     plt.show()

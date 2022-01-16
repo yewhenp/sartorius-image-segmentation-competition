@@ -1,6 +1,8 @@
+import multiprocessing
+
 import numpy as np
 import tensorflow as tf
-
+from tqdm import tqdm
 from typing import List, Dict
 
 # START PROJECT IMPORTS
@@ -95,44 +97,66 @@ class MyIoU(tf.keras.metrics.Metric):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-def competition_metric(y, y_hat):
-    thresholds = (0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95)
-    splitted_y = split_mask(y, min_size=20)
-    splitted_yhat = split_mask(y_hat, min_size=20)
+def compute_iou(labels, y_pred):
+    labels = split_mask(labels)
+    y_pred = split_mask(y_pred)
 
-    precision = 0
+    true_objects = len(np.unique(labels))
+    pred_objects = len(np.unique(y_pred))
 
-    for t in thresholds:
-        # matches = []
-        tp = 0
-        unmatched_yhat_entities = list(range(len(splitted_yhat)))
+    # Compute intersection between all objects
+    intersection = np.histogram2d(
+        labels.flatten(), y_pred.flatten(), bins=(true_objects, pred_objects)
+    )[0]
 
-        for yi, y_entity in enumerate(splitted_y):
-            for yhati in unmatched_yhat_entities:
-                yhat_entity = splitted_yhat[yhati]
+    # Compute areas (needed for finding the union between all objects)
+    area_true = np.histogram(labels, bins=true_objects)[0]
+    area_pred = np.histogram(y_pred, bins=pred_objects)[0]
+    area_true = np.expand_dims(area_true, -1)
+    area_pred = np.expand_dims(area_pred, 0)
 
-                y_flat = set(np.where(y_entity.flatten() == 1)[0])
-                yhat_flat = set(np.where(yhat_entity.flatten() == 1)[0])
-                # if iou >= thresh
-                if len((y_flat & yhat_flat)) / len((y_flat | yhat_flat)) >= t:
-                    # tp += len(y_flat & yhat_flat)
-                    # fp += len(y_flat - yhat_flat)
-                    # fn += len(yhat_flat - y_flat)
-                    tp += 1
-                    unmatched_yhat_entities.remove(yhati)
-                    break
-        fn = len(splitted_y) - tp
-        fp = len(unmatched_yhat_entities)
+    # Compute union
+    union = area_true + area_pred - intersection
+    intersection = intersection[1:, 1:]  # exclude background
+    union = union[1:, 1:]
+    union[union == 0] = 1e-9
+    iou = intersection / union
+
+    return iou
 
 
-        if tp == 0:
-            # print(0)
-            continue
-        # print(tp / (tp + fp + fn))
-        precision += tp / (tp + fp + fn)
-    
-    precision /= len(thresholds)
-    return precision
+def precision_at(threshold, iou):
+    matches = iou > threshold
+    true_positives = np.sum(matches, axis=1) >= 1  # Correct objects
+    false_negatives = np.sum(matches, axis=1) == 0  # Missed objects
+    false_positives = np.sum(matches, axis=0) == 0  # Extra objects
+    tp, fp, fn = (
+        np.sum(true_positives),
+        np.sum(false_positives),
+        np.sum(false_negatives),
+    )
+    return tp, fp, fn
+
+
+def competition_metric(truths, preds):
+    iter_data = list(zip(truths, preds))
+
+    pool = multiprocessing.Pool(processes=8)
+    ious = pool.starmap(compute_iou, iter_data)
+
+    prec = []
+    for t in np.arange(0.5, 1.0, 0.05):
+        tps, fps, fns = 0, 0, 0
+        for iou in ious:
+            tp, fp, fn = precision_at(t, iou)
+            tps += tp
+            fps += fp
+            fns += fn
+
+        p = tps / (tps + fps + fns)
+        prec.append(p)
+
+    return np.mean(prec)
 
 
 METRICS = {
