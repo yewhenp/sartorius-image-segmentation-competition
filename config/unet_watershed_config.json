@@ -1,5 +1,5 @@
 {
-  "experiment_name": "unet_watershed_big_jaccard_loss-64-128-256-512-1024-dropout.3",
+  "experiment_name": "unet_watershed_big_jaccard_loss-64-128-256-512-1024-dropout.3-tr_ratio.8",
 
   "MODEL_RELATED_STUFF": null,
   "model_name": "U-NET-WATERSHED",
@@ -12,13 +12,13 @@
 
 
   "TRAINING_RELATED_STUFF": null,
-  "train_ratio": 0.998,
-  "batch_size": 1,
+  "train_ratio": 0.8,
+  "batch_size": 2,
   "shuffle": true,
-  "epochs": 10,
+  "epochs": 100,
   "save_weights_each": 5,
   "weights_dir": "weights",
-  "generator_type": "dynamic",
+  "generator_type": "static",
 
 
   "DATA_RELATED_STUFF": null,
