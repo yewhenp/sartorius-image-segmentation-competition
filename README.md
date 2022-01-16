@@ -88,7 +88,8 @@ To set metrics to use during training, add their names into "metrics" config fie
 
 ### Achieved results
 
-№### Training plots
+#### Training plots
+
 ![U-NET loss](img/loss_funciton_unet)
 ![U-NET Mean IOU](img/mean_iou_unet)
 ![WaterShed loss](img/mean_iou_watershed)
