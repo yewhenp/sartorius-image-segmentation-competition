@@ -1,6 +1,7 @@
 from skimage.segmentation import watershed
 from skimage.measure import label
 import numpy as np
+from typing import Dict
 
 # START PROJECT IMPORTS
 from .unet import get_unet
@@ -42,5 +43,5 @@ class UnetWatershed:
         return np.asarray(rez)
 
 
-def get_unet_watershed(input_data_shape):
+def get_unet_watershed(input_data_shape, **kwargs):
     return UnetWatershed(input_data_shape)

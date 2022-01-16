@@ -10,6 +10,7 @@ from typing import Dict
 # START PROJECT IMPORTS
 from .utilities import load_train_labels
 from ..constants import WIDTH, HEIGHT, REDUCED_HEIGHT, ConfigKeys as ck
+from ..models.mrcnn.utils import Dataset as MrcnnDataSet
 # END PROJECT_IMPORTS
 
 
@@ -135,8 +136,18 @@ class StaticDataGenerator(keras.utils.Sequence):
         self.images = np.ndarray((self.n_images, *self.image_dim, self.channels))
         self.masks = np.ndarray((self.n_images, *self.image_dim, 1))
 
+        # self.image_info = []
+
         flag = True
         for i, photo_id in enumerate(photo_ids):
+            # self.image_info.append({
+            #     'id': i,
+            #     'source': None,
+            #     'path': f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png"
+            # })
+            # if i == 20:
+            #     self.n_images = 20
+            #     break
             # load image
             image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
             # image = rescaling(cv2.resize(image, (image.shape[1], REDUCED_HEIGHT)))       # normalize
@@ -201,6 +212,19 @@ class StaticDataGenerator(keras.utils.Sequence):
         self.indexes = np.arange(self.n_images)
         if self.shuffle:
             np.random.shuffle(self.indexes)
+
+    # def load_image(self, image_id):
+    #     return self.images[image_id]
+
+    # def load_mask(self, image_id):
+    #     return self.masks[image_id]
+    
+    # def image_reference(self, image_id):
+    #     return ""
+
+    # @property
+    # def image_ids(self):
+    #     return self.indexes
 
 
 class DataLoader:
@@ -272,3 +296,99 @@ class SubmissionDataLoader:
             ck.SHUFFLE: False,
             ck.IMAGES_DIR_PATH: self.cnf[ck.SUBMISSION_DIR_PATH]
         }, self.submission_df, train_mode=False)
+
+
+class MyMrcnnDataSet(MrcnnDataSet):
+    def load_data(self, cnf: Dict, grouped_labels: pd.core.groupby.GroupBy, train_mode=True):
+        """
+        Initialization
+        :param cnf: config
+        :param grouped_labels: grouped dataframe by id
+        """
+        self.add_class("sartorius", 1, "neuron")
+
+
+        self.cnf = cnf
+        self.train_mode = train_mode
+
+        self.image_dim = (REDUCED_HEIGHT, WIDTH)     # TODO: try not reshape
+        self.new_dim = None
+        self.channels = 3
+
+        # self.n_images = len(grouped_labels)
+        self.n_images = 20
+        photo_ids = list(grouped_labels.groups.keys())
+        self.images = np.ndarray((self.n_images, *self.image_dim, self.channels))
+        self.masks = np.ndarray((self.n_images, *self.image_dim, 1))
+
+        # self.image_info = []
+
+        flag = True
+        for i, photo_id in enumerate(photo_ids):
+            if i == 20:
+                break
+            # load image
+            image = cv2.imread(f"{self.cnf[ck.IMAGES_DIR_PATH]}/{photo_id}.png")
+            # image = rescaling(cv2.resize(image, (image.shape[1], REDUCED_HEIGHT)))       # normalize
+            image = cv2.resize(image, (image.shape[1], REDUCED_HEIGHT))#.astype(float) / 255
+            # assert 0 <= image.numpy().min() < image.numpy().max() <= 1
+            # assert 0 <= image.min() < image.max() <= 1
+            self.images[i] = image
+
+            self.add_image("sartorius", image_id=i, path=None, width=WIDTH, height=HEIGHT)
+
+            if self.train_mode:
+                # load mask
+                with open(f"{self.cnf[ck.MASK_DIR_PATH]}/mask_{photo_id}.pkl", 'rb') as f:
+                    mask = pickle.load(f)
+                    if len(mask.shape) == 2:
+                        mask = cv2.resize(mask, (mask.shape[1], REDUCED_HEIGHT))
+                        mask = np.round(mask / 255)
+                        mask = np.reshape(mask, (*mask.shape, 1))
+                    else:
+                        new_images = []
+                        for idx in range(mask.shape[0]):
+                            mask_curr = cv2.resize(mask[idx], (WIDTH, REDUCED_HEIGHT)) / 255
+                            new_images.append(mask_curr)
+                        mask = np.asarray(new_images)
+                        mask = np.transpose(mask, (1, 2, 0))
+                        if flag:
+                            flag = False
+                            self.masks = np.empty((self.n_images, *mask.shape))
+                            self.new_dim = mask.shape
+                    assert mask.min() == 0 and mask.max() == 1
+                    self.masks[i] = mask
+
+    def load_image(self, image_id):
+        # return np.array([self.images[image_id]])
+        # print("<<<<<<<<<<<<<<<<<")
+        # print( np.expand_dims(self.images[image_id], -1).shape)
+        # return np.expand_dims(self.images[image_id], -1)
+        return self.images[image_id]
+
+    def load_mask(self, image_id):
+        """Generate instance masks for shapes of the given image ID.
+        """
+        # mask = 
+        # print(">>>>>>>>>>>>>>")
+        # print(np.expand_dims(self.masks[image_id].astype(bool), -1).shape)
+        return self.masks[image_id].astype(bool), np.array([1,], dtype=np.int32)
+
+def mrcnn_get_train_valid_datasets(cnf: Dict):
+    train_df = load_train_labels(cnf[ck.TRAIN_CSV_PATH])
+    df_groups = [train_df.get_group(x) for x in train_df.groups]
+    split_index = int(len(df_groups) * cnf[ck.TRAIN_RATIO])
+
+    random.shuffle(df_groups)
+    df_train = pd.concat(df_groups[:split_index]).groupby("id")
+    df_validate = pd.concat(df_groups[split_index:]).groupby("id")
+
+    print("Loading training data")
+    ds_train = MyMrcnnDataSet()
+    ds_train.load_data(cnf, grouped_labels=df_train)
+    ds_train.prepare()
+    print("Loading validation data")
+    ds_val = MyMrcnnDataSet()
+    ds_val.load_data(cnf, grouped_labels=df_validate)
+    ds_val.prepare()
+    return ds_train, ds_val

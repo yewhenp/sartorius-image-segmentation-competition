@@ -4,7 +4,7 @@ import os
 from argparse import ArgumentParser, Namespace
 
 from src.constants import ConfigKeys as ck, WIDTH, REDUCED_HEIGHT, HEIGHT
-from src.data_processing.data_generator import DataLoader
+from src.data_processing.data_generator import DataLoader, mrcnn_get_train_valid_datasets
 from src.metrics import competition_metric
 from src.models import get_model
 from src.visualisation import display
@@ -24,9 +24,13 @@ def main(args: Namespace):
         return
 
     print("Preparing data generators...")
-    dl = DataLoader(cnf, cnf[ck.GENERATOR_TYPE])
-    dl.load_data()
-    data_generator_train, data_generator_validate = dl.split_data()
+    if cnf[ck.MODEL_NAME] != "MASK-R-CNN":
+        dl = DataLoader(cnf, cnf[ck.GENERATOR_TYPE])
+        dl.load_data()
+        data_generator_train, data_generator_validate = dl.split_data()
+    else:
+        print("Warning: Using MRCNN datasets")
+        data_generator_train, data_generator_validate =  mrcnn_get_train_valid_datasets(cnf)
 
     if not cnf[ck.USE_PRETRAINED]:
         model = train_model(cnf, (data_generator_train, data_generator_validate))

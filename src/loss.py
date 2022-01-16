@@ -51,6 +51,7 @@ LOSSES = {
     "tversky_loss": tversky_loss,
     "comb_loss": comb_loss,
     "jaccard_loss": jaccard_loss,
+    "auto": lambda: None
 }
 
 
