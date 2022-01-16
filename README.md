@@ -94,5 +94,5 @@ To set metrics to use during training, add their names into "metrics" config fie
 ![All Mean IOU](img/mean_iou_all)
 
 ### Achieved results
-Mean IOU ~ 0.8
-Competition metric ~ 0.065
+- Mean IOU ~ 0.8
+- Competition metric ~ 0.065
