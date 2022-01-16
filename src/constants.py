@@ -1,3 +1,6 @@
+import os
+
+
 WIDTH = 704
 HEIGHT = 520
 REDUCED_HEIGHT = 512
@@ -26,6 +29,11 @@ class ConfigKeys:
     OPTIMIZER = "optimizer"
     METRICS = "metrics"
     CALC_METRICS = "calc_metrics"
+    OPTIMIZER_PARAMETERS = "optimizer_parameters"
 
 
 ck = ConfigKeys
+
+# ROOT_DIR = os.path.abspath("..")
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+print("ROOT_DIR: " + ROOT_DIR)

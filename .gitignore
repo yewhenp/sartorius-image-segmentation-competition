@@ -6,3 +6,4 @@ sartorius-cell-instance-segmentation/
 .idea/
 sartorius-cell-instance-segmentation.zip
 *__pycache__
+mask_rcnn_coco.h5

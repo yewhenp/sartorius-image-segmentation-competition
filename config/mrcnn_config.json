@@ -1,27 +1,24 @@
 {
-  "experiment_name": "unet_watershed_small_jaccard_loss-dropout.3-tr_ratio.8",
+  "experiment_name": "mrcnn-testrun",
 
   "MODEL_RELATED_STUFF": null,
-  "model_name": "U-NET-WATERSHED",
-  "loss_function": "jaccard_loss",
+  "model_name": "MASK-R-CNN",
+  "loss_function": "auto",
   "loss_params": {
-    "smooth": 100
   },
-  "optimizer": "adam",
+  "optimizer": "sgd",
   "optimizer_parameters": {
     "learning_rate": 0.001, 
-    "beta_1": 0.9,
-    "beta_2": 0.999,
-    "epsilon": 1e-7
+    "momentum": 0.9
   },
   "metrics": ["MeanIoU"],
 
 
   "TRAINING_RELATED_STUFF": null,
   "train_ratio": 0.8,
-  "batch_size": 2,
+  "batch_size": 1,
   "shuffle": true,
-  "epochs": 10,
+  "epochs": 2,
   "save_weights_each": 5,
   "weights_dir": "weights",
   "generator_type": "static",
@@ -30,14 +27,16 @@
   "DATA_RELATED_STUFF": null,
   "images_read_dir": "sartorius-cell-instance-segmentation/train",
   "train_csv_path": "sartorius-cell-instance-segmentation/train.csv",
-  "mask_dir_path": "masks_water",
+  "mask_dir_path": "masks",
   "submission_read_dir": "sartorius-cell-instance-segmentation/test",
   "submission_csv_dir": "sartorius-cell-instance-segmentation/sample_submission.csv",
 
 
   "OTHER_STUFF": null,
-  "use_pretrained": true,
-  "display": true,
-  "predict_submission": false,
-  "calc_metrics": true
+  "use_pretrained": false,
+  "display": false,
+  "predict_submission": false, 
+  "calc_metrics": true,
+
+  "mrcnn_init_with": "coco"
 }

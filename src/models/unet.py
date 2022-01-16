@@ -1,5 +1,6 @@
 from tensorflow import keras
 from tensorflow.keras import layers
+from typing import Dict
 
 
 def conv_block(input_data, num_filters):
@@ -29,7 +30,7 @@ def decoder_block(input_data, skip_features, num_filters, dropout_prob=0.5):
     return x
 
 
-def get_unet(input_data_shape, output_channels=1) -> keras.Model:
+def get_unet(input_data_shape, output_channels=1, **kwargs) -> keras.Model:
     print("output_channels = ", output_channels)
 
     inputs = keras.Input(input_data_shape)

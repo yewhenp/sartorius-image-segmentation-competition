@@ -8,11 +8,12 @@ from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.models import Model
 
 # START PROJECT IMPORTS
-from .data_processing.data_generator import DataLoader
+from .data_processing.data_generator import DataLoader, mrcnn_get_train_valid_datasets
 from .constants import ConfigKeys as ck, REDUCED_HEIGHT, WIDTH
 from .models import get_model
 from .loss import get_loss
 from .metrics import get_metrics
+from .optimizers import get_optimizer
 # END PROJECT_IMPORTS
 
 
@@ -46,9 +47,13 @@ class WandbCustomCallback(Callback):
 def train_model(cnf: Dict, data_generators=None):
     if data_generators is None:
         print("Preparing data generators...")
-        dl = DataLoader(cnf, cnf[ck.GENERATOR_TYPE])
-        dl.load_data()
-        data_generator_train, data_generator_validate = dl.split_data()
+        if cnf[ck.MODEL_NAME] != "MASK-R-CNN":
+            dl = DataLoader(cnf, cnf[ck.GENERATOR_TYPE])
+            dl.load_data()
+            data_generator_train, data_generator_validate = dl.split_data()
+        else:
+            print("Warning: Using MRCNN datasets")
+            data_generator_train, data_generator_validate =  mrcnn_get_train_valid_datasets(cnf)
     else:
         data_generator_train, data_generator_validate = data_generators
 
@@ -58,7 +63,8 @@ def train_model(cnf: Dict, data_generators=None):
     model = get_model(cnf, input_shape=(REDUCED_HEIGHT, WIDTH, 3))
     loss_function = get_loss(cnf)
     metrics = get_metrics(cnf)
-    model.compile(optimizer=cnf[ck.OPTIMIZER],
+    optimizer = get_optimizer(cnf)
+    model.compile(optimizer=optimizer,
                   loss=loss_function,
                   metrics=[metrics])
 
